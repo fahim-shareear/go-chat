@@ -1,32 +1,28 @@
 import express from "express";
-import dotenv from "dotenv";
-import path from "path";
-import { fileURLToPath } from "url";
-
+import cors from "cors";
 import authRoutes from "./router/auth.router.js";
 import messageRoutes from "./router/message.router.js";
+import dotenv from "dotenv";
+import path from "path";
 
+app.use(cors());
+app.use(express.json());
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = path.resolve();
 
 app.use("/api/auth", authRoutes);
-app.use("/api/messages", messageRoutes);
+app.use("/api/message", messageRoutes);
 
-if (process.env.NODE_ENV === "production") {
-  const frontendPath = path.join(__dirname, "../../frontend/dist");
+//make ready for production:
+if(process.env.NODE_ENV === "production"){
+    app.use(express.static(path.join(__dirname, "../../frontend/dist")));
 
-  app.use(express.static(frontendPath));
-
-  app.get("*", (req, res) => {
-    res.sendFile(path.join(frontendPath, "index.html"));
-  });
+    app.get("*", (req, res) =>{
+        res.sendFile(path.join(__dirname, "../../frontend", "dist", "index.html"));
+    })
 }
 
-app.listen(port, () =>
-  console.log(`Backend is running on port ${port}`)
-);
+app.listen(port, ()=> console.log(`Server is running on port ${port}`));
